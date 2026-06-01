@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"declaration": false,
+		"moduleResolution": "bundler",
+		"module": "ESNext",
+		"target": "ESNext",
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"paths": {
+			"@/*": ["./src/*"],
+			"virtual:sapphire-pieces": ["./.generated/pieces.d.ts"]
+		}
+	},
+	"include": ["src/**/*"]
+}
