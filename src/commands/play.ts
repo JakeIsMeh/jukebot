@@ -21,7 +21,6 @@ const options = {
 
 // 2. Build Pipeline carrying voice channel check and performance logging middlewares
 const playPipeline = new Pipeline<{}, InferSchemaTypes<typeof options>, BotServices>()
-	.use(performanceTimer)
 	.use(inVoice)
 	.use(inSameVoice)
 	.run(async (ctx) => {

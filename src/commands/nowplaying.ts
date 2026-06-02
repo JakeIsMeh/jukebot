@@ -2,9 +2,8 @@ import { Pipeline, defineCommand, DataObject } from '../framework/index';
 import { performanceTimer } from '../middleware';
 import { BotServices } from '../types';
 
-const nowplayingPipeline = new Pipeline<{}, Record<string, never>, BotServices>()
-	.use(performanceTimer)
-	.run(async (ctx) => {
+const nowplayingPipeline = new Pipeline<{}, Record<string, never>, BotServices>().run(
+	async (ctx) => {
 		const queue = ctx.services.player.getQueue(ctx.member!.guild.id);
 		if (!queue || !queue.playing) {
 			await ctx.reply('❌ There is nothing playing right now!', { ping: false });
@@ -47,7 +46,8 @@ const nowplayingPipeline = new Pipeline<{}, Record<string, never>, BotServices>(
 				},
 			],
 		});
-	});
+	},
+);
 
 export const nowplayingCommand = defineCommand<DataObject, BotServices, {}>({
 	name: 'nowplaying',

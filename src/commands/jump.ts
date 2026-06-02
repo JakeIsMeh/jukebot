@@ -27,7 +27,6 @@ const relativeOptions = {
 } as const;
 
 const absolutePipeline = new Pipeline<{}, InferSchemaTypes<typeof absoluteOptions>, BotServices>()
-	.use(performanceTimer)
 	.use(inVoice)
 	.use(inSameVoice)
 	.run(async (ctx) => {

@@ -3,7 +3,6 @@ import { inVoice, inSameVoice, performanceTimer } from '../middleware';
 import { BotServices } from '../types';
 
 const resumePipeline = new Pipeline<{}, Record<string, never>, BotServices>()
-	.use(performanceTimer)
 	.use(inVoice)
 	.use(inSameVoice)
 	.run(async (ctx) => {

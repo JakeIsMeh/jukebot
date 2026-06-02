@@ -12,7 +12,6 @@ const options = {
 } as const;
 
 const movePipeline = new Pipeline<{}, InferSchemaTypes<typeof options>, BotServices>()
-	.use(performanceTimer)
 	.use(inVoice)
 	.use(inSameVoice)
 	.run(async (ctx) => {

@@ -3,7 +3,6 @@ import { inVoice, performanceTimer } from '../middleware';
 import { BotServices } from '../types';
 
 const joinPipeline = new Pipeline<{}, Record<string, never>, BotServices>()
-	.use(performanceTimer)
 	.use(inVoice)
 	.run(async (ctx) => {
 		const targetChannel = ctx.data.voiceChannel;

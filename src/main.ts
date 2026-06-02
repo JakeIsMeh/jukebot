@@ -15,6 +15,7 @@ import { stopCommand } from './commands/stop';
 import { volumeCommand } from './commands/volume';
 import { Framework, helpCommand } from './framework/index';
 import { rootLogger } from './framework/logger';
+import { performanceTimer } from './middleware';
 import { MusicPlayerManager, queueTimerManager } from './services/MusicPlayer';
 import { BotServices } from './types';
 
@@ -34,6 +35,7 @@ const app: Framework<BotServices> = new Framework<BotServices>({ prefix: 'jb.' }
 	.provide('queueTimers', queueTimerManager);
 
 app
+	.use(performanceTimer)
 	.command(playCommand)
 	.command(skipCommand)
 	.command(stopCommand)

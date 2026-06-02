@@ -7,7 +7,6 @@ const options = {
 } as const;
 
 const volumePipeline = new Pipeline<{}, InferSchemaTypes<typeof options>, BotServices>()
-	.use(performanceTimer)
 	.use(inVoice)
 	.use(inSameVoice)
 	.run(async (ctx) => {
