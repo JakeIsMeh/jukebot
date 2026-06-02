@@ -260,31 +260,37 @@ export class Framework<TServices extends Record<string, any> = Record<string, an
 				state.replied = true;
 				const flagBitfield = new MessageFlagsBitField();
 
-				let finalPayload: any = {};
+				let replyPayload: any = {};
 				if (typeof payload === 'string') {
-					finalPayload.content = payload;
+					replyPayload.content = payload;
 				} else {
-					finalPayload = { ...payload };
+					replyPayload = { ...payload };
 				}
 
-				const flagsToUse = options?.flags ?? finalPayload.flags;
+				const flagsToUse = options?.flags ?? replyPayload.flags;
 				if (flagsToUse) {
 					flagBitfield.add(flagsToUse);
 				}
 				if (flagBitfield.bitfield) {
-					finalPayload.flags = flagBitfield.bitfield;
+					replyPayload.flags = flagBitfield.bitfield;
 				}
 
-				const ping = options?.ping ?? finalPayload.ping ?? true;
-				finalPayload.allowedMentions = { repliedUser: ping };
-				finalPayload.withResponse = true as const;
+				const ping = options?.ping ?? replyPayload.ping ?? true;
+				replyPayload.allowedMentions = { repliedUser: ping };
 
-				const msg =
-					interaction.replied || interaction.deferred
-						? await interaction.followUp(finalPayload)
-						: await interaction.reply(finalPayload);
+				let msg: Message;
+				if (interaction.replied || interaction.deferred) {
+					msg = await interaction.followUp(replyPayload);
+				} else {
+					const response = await interaction.reply({ ...replyPayload, withResponse: true });
+					const fetchedMessage = response.resource?.message;
+					if (!fetchedMessage) {
+						throw new Error('❌ Failed to retrieve message from interaction response.');
+					}
+					msg = fetchedMessage;
+				}
 
-				return msg as Message;
+				return msg;
 			},
 			push<TNew extends DataObject>(this: Context<any>, newData: TNew) {
 				return {
@@ -493,15 +499,15 @@ export class Framework<TServices extends Record<string, any> = Record<string, an
 			},
 			reply: async (payload, options) => {
 				state.replied = true;
-				let finalPayload: any = {};
+				let replyPayload: any = {};
 				if (typeof payload === 'string') {
-					finalPayload.content = payload;
+					replyPayload.content = payload;
 				} else {
-					finalPayload = { ...payload };
+					replyPayload = { ...payload };
 				}
-				const ping = options?.ping ?? finalPayload.ping ?? false;
-				finalPayload.allowedMentions = { repliedUser: ping };
-				return message.reply(finalPayload);
+				const ping = options?.ping ?? replyPayload.ping ?? false;
+				replyPayload.allowedMentions = { repliedUser: ping };
+				return message.reply(replyPayload);
 			},
 			push<TNew extends DataObject>(this: Context<any>, newData: TNew) {
 				return {
