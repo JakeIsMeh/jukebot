@@ -8,6 +8,7 @@ import { nowplayingCommand } from './commands/nowplaying';
 import { pauseCommand } from './commands/pause';
 import { playCommand } from './commands/play';
 import { queueCommand } from './commands/queue';
+import { removeCommand } from './commands/remove';
 import { resumeCommand } from './commands/resume';
 import { skipCommand } from './commands/skip';
 import { stopCommand } from './commands/stop';
@@ -45,6 +46,7 @@ app
 	.command(moveCommand)
 	.command(joinCommand)
 	.command(leaveCommand)
+	.command(removeCommand)
 	.command(helpCommand as any);
 
 client.on('interactionCreate', (interaction) => app.handleInteraction(interaction));
