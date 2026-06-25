@@ -32,7 +32,17 @@ const absolutePipeline = new Pipeline<{}, InferSchemaTypes<typeof absoluteOption
 	.run(async (ctx) => {
 		const queue = ctx.services.player.getQueue(ctx.member!.guild.id);
 		if (!queue || !queue.isPlaying) {
-			await ctx.reply('❌ There is nothing playing right now!', { ping: false });
+			await ctx.reply(
+				{
+					embeds: [
+						{
+							description: '❌ There is nothing playing right now!',
+							color: 0xff3333,
+						},
+					],
+				},
+				{ ping: false },
+			);
 			return;
 		}
 
@@ -41,24 +51,59 @@ const absolutePipeline = new Pipeline<{}, InferSchemaTypes<typeof absoluteOption
 		const targetIndex = ctx.options.index; // 1-based absolute index
 
 		if (targetIndex < 1 || targetIndex > allSongs.length) {
-			await ctx.reply(`❌ Invalid index! Must be between 1 and ${allSongs.length}.`, {
-				ping: false,
-			});
+			await ctx.reply(
+				{
+					embeds: [
+						{
+							description: `❌ Invalid index! Must be between 1 and ${allSongs.length}.`,
+							color: 0xff3333,
+						},
+					],
+				},
+				{ ping: false },
+			);
 			return;
 		}
 
 		const relativeOffset = targetIndex - (currentIndex + 1);
 
 		if (relativeOffset === 0) {
-			await ctx.reply('❌ Cannot jump to the currently playing song!', { ping: false });
+			await ctx.reply(
+				{
+					embeds: [
+						{
+							description: '❌ Cannot jump to the currently playing song!',
+							color: 0xff3333,
+						},
+					],
+				},
+				{ ping: false },
+			);
 			return;
 		}
 
 		try {
 			const targetSong = await queue.jump(relativeOffset);
-			await ctx.reply(`⏭️ Jumped to absolute index **#${targetIndex}**: **${targetSong.name}**!`);
+			await ctx.reply({
+				embeds: [
+					{
+						description: `⏭️ Jumped to absolute index **#${targetIndex}**: **${targetSong.name}**!`,
+						color: 0x5865f2,
+					},
+				],
+			});
 		} catch (error) {
-			await ctx.reply(`❌ Failed to jump: ${(error as Error).message}`, { ping: false });
+			await ctx.reply(
+				{
+					embeds: [
+						{
+							description: `❌ Failed to jump: ${(error as Error).message}`,
+							color: 0xff3333,
+						},
+					],
+				},
+				{ ping: false },
+			);
 		}
 	});
 
@@ -74,27 +119,60 @@ const relativeSubcommand = defineSubcommand<DataObject, BotServices, typeof rela
 		.run(async (ctx) => {
 			const queue = ctx.services.player.getQueue(ctx.member!.guild.id);
 			if (!queue || !queue.isPlaying) {
-				await ctx.reply('❌ There is nothing playing right now!', { ping: false });
+				await ctx.reply(
+					{
+						embeds: [
+							{
+								description: '❌ There is nothing playing right now!',
+								color: 0xff3333,
+							},
+						],
+					},
+					{ ping: false },
+				);
 				return;
 			}
 
 			const offset = ctx.options.offset;
 
 			if (offset === 0) {
-				await ctx.reply('❌ Cannot jump by offset 0 (the currently playing song)!', {
-					ping: false,
-				});
+				await ctx.reply(
+					{
+						embeds: [
+							{
+								description: '❌ Cannot jump by offset 0 (the currently playing song)!',
+								color: 0xff3333,
+							},
+						],
+					},
+					{ ping: false },
+				);
 				return;
 			}
 
 			try {
 				const targetSong = await queue.jump(offset);
 				const offsetStr = offset > 0 ? `+${offset}` : `${offset}`;
-				await ctx.reply(
-					`⏭️ Jumped by relative offset **${offsetStr}** to: **${targetSong.name}**!`,
-				);
+				await ctx.reply({
+					embeds: [
+						{
+							description: `⏭️ Jumped by relative offset **${offsetStr}** to: **${targetSong.name}**!`,
+							color: 0x5865f2,
+						},
+					],
+				});
 			} catch (error) {
-				await ctx.reply(`❌ Failed to jump: ${(error as Error).message}`, { ping: false });
+				await ctx.reply(
+					{
+						embeds: [
+							{
+								description: `❌ Failed to jump: ${(error as Error).message}`,
+								color: 0xff3333,
+							},
+						],
+					},
+					{ ping: false },
+				);
 			}
 		})!,
 });

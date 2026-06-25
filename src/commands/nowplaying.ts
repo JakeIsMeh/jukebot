@@ -1,12 +1,21 @@
 import { Pipeline, defineCommand, DataObject } from '../framework/index';
-import { performanceTimer } from '../middleware';
 import { BotServices } from '../types';
 
 const nowplayingPipeline = new Pipeline<{}, Record<string, never>, BotServices>().run(
 	async (ctx) => {
 		const queue = ctx.services.player.getQueue(ctx.member!.guild.id);
 		if (!queue || !queue.playing) {
-			await ctx.reply('❌ There is nothing playing right now!', { ping: false });
+			await ctx.reply(
+				{
+					embeds: [
+						{
+							description: '❌ There is nothing playing right now!',
+							color: 0xff3333,
+						},
+					],
+				},
+				{ ping: false },
+			);
 			return;
 		}
 

@@ -6,7 +6,14 @@ export const inVoice = defineMiddleware<{}, { voiceChannel: VoiceBasedChannel },
 	async (ctx, next) => {
 		const channel = ctx.member?.voice.channel;
 		if (!channel) {
-			await ctx.reply('❌ You must be in a voice channel!');
+			await ctx.reply({
+				embeds: [
+					{
+						description: '❌ You must be in a voice channel!',
+						color: 0xff3333,
+					},
+				],
+			});
 			return;
 		}
 
@@ -23,7 +30,14 @@ export const inSameVoice = defineMiddleware<{ voiceChannel: VoiceBasedChannel },
 		const botVoiceChannelId = ctx.member?.guild.members.me?.voice.channelId;
 
 		if (botVoiceChannelId && userChannel.id !== botVoiceChannelId) {
-			await ctx.reply('❌ You must be in my voice channel!');
+			await ctx.reply({
+				embeds: [
+					{
+						description: '❌ You must be in my voice channel!',
+						color: 0xff3333,
+					},
+				],
+			});
 			return;
 		}
 

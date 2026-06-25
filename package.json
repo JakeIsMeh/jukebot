@@ -10,7 +10,7 @@
 	"scripts": {
 		"dev": "tsdown --watch --config-loader tsx --on-success \"node --env-file=.env ./dist/main.mjs\"",
 		"typecheck": "tsc --noEmit",
-		"build": "tsc --noEmit && tsdown",
+		"build": "tsc --noEmit && tsdown --config-loader tsx",
 		"fmt": "oxfmt",
 		"fmt:check": "oxfmt --check",
 		"lint": "oxlint",

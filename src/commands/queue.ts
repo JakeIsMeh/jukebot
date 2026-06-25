@@ -7,7 +7,17 @@ import { BotServices } from '../types';
 const queuePipeline = new Pipeline<{}, Record<string, never>, BotServices>().run(async (ctx) => {
 	const queue = ctx.services.player.getQueue(ctx.member!.guild.id);
 	if (!queue || (queue.songs.length === 0 && queue.history.length === 0)) {
-		await ctx.reply('📭 The queue is currently empty!', { ping: false });
+		await ctx.reply(
+			{
+				embeds: [
+					{
+						description: '📭 The queue is currently empty!',
+						color: 0x5865f2,
+					},
+				],
+			},
+			{ ping: false },
+		);
 		return;
 	}
 
@@ -81,8 +91,13 @@ const queuePipeline = new Pipeline<{}, Record<string, never>, BotServices>().run
 		collector.on('collect', async (interaction) => {
 			if (interaction.user.id !== ctx.author.id) {
 				await interaction.reply({
-					content:
-						'❌ Only the user who requested this queue display can use the pagination buttons.',
+					embeds: [
+						{
+							description:
+								'❌ Only the user who requested this queue display can use the pagination buttons.',
+							color: 0xff3333,
+						},
+					],
 					ephemeral: true,
 				});
 				return;
@@ -130,15 +145,42 @@ const clearSubcommand = defineSubcommand<DataObject, BotServices, {}>({
 		.run(async (ctx) => {
 			const queue = ctx.services.player.getQueue(ctx.member!.guild.id);
 			if (!queue || queue.songs.length <= 1) {
-				await ctx.reply('❌ The queue is already empty!', { ping: false });
+				await ctx.reply(
+					{
+						embeds: [
+							{
+								description: '❌ The queue is already empty!',
+								color: 0xff3333,
+							},
+						],
+					},
+					{ ping: false },
+				);
 				return;
 			}
 
 			try {
 				queue.songs.splice(1);
-				await ctx.reply('🗑️ Cleared all upcoming songs from the queue!');
+				await ctx.reply({
+					embeds: [
+						{
+							description: '🗑️ Cleared all upcoming songs from the queue!',
+							color: 0x5865f2,
+						},
+					],
+				});
 			} catch (error) {
-				await ctx.reply(`❌ Failed to clear queue: ${(error as Error).message}`, { ping: false });
+				await ctx.reply(
+					{
+						embeds: [
+							{
+								description: `❌ Failed to clear queue: ${(error as Error).message}`,
+								color: 0xff3333,
+							},
+						],
+					},
+					{ ping: false },
+				);
 			}
 		})!,
 });
@@ -153,15 +195,42 @@ const shuffleSubcommand = defineSubcommand<DataObject, BotServices, {}>({
 		.run(async (ctx) => {
 			const queue = ctx.services.player.getQueue(ctx.member!.guild.id);
 			if (!queue || queue.songs.length <= 2) {
-				await ctx.reply('❌ There are not enough songs in the queue to shuffle!', { ping: false });
+				await ctx.reply(
+					{
+						embeds: [
+							{
+								description: '❌ There are not enough songs in the queue to shuffle!',
+								color: 0xff3333,
+							},
+						],
+					},
+					{ ping: false },
+				);
 				return;
 			}
 
 			try {
 				await queue.shuffle();
-				await ctx.reply('🔀 Shuffled the queue!');
+				await ctx.reply({
+					embeds: [
+						{
+							description: '🔀 Shuffled the queue!',
+							color: 0x5865f2,
+						},
+					],
+				});
 			} catch (error) {
-				await ctx.reply(`❌ Failed to shuffle: ${(error as Error).message}`, { ping: false });
+				await ctx.reply(
+					{
+						embeds: [
+							{
+								description: `❌ Failed to shuffle: ${(error as Error).message}`,
+								color: 0xff3333,
+							},
+						],
+					},
+					{ ping: false },
+				);
 			}
 		})!,
 });

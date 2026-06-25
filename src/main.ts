@@ -30,7 +30,7 @@ const client = new Client({
 
 const player = new MusicPlayerManager();
 
-const app: Framework<BotServices> = new Framework<BotServices>({ prefix: 'jb.' })
+const app: Framework<BotServices> = new Framework<BotServices>({ prefix: '-' })
 	.provide('player', player)
 	.provide('queueTimers', queueTimerManager);
 
@@ -105,7 +105,12 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 					if (guildPlayer.textChannel) {
 						guildPlayer.textChannel
 							.send({
-								content: '⏸️ Playback paused because all users left the voice channel.',
+								embeds: [
+									{
+										description: '⏸️ Playback paused because all users left the voice channel.',
+										color: 0x5865f2,
+									},
+								],
 								flags: [MessageFlags.SuppressNotifications],
 							})
 							.catch(() => {});

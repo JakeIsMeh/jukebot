@@ -1,5 +1,5 @@
 import { Pipeline, defineCommand, DataObject } from '../framework/index';
-import { inVoice, performanceTimer } from '../middleware';
+import { inVoice } from '../middleware';
 import { BotServices } from '../types';
 
 const joinPipeline = new Pipeline<{}, Record<string, never>, BotServices>()

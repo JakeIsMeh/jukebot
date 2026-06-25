@@ -1,7 +1,7 @@
 import { GuildTextBasedChannel } from 'discord.js';
 
 import { Pipeline, defineCommand, InferSchemaTypes, DataObject } from '../framework/index';
-import { inVoice, inSameVoice, performanceTimer } from '../middleware';
+import { inVoice, inSameVoice } from '../middleware';
 import { searchSong, isSpotifyTrack, isSpotifyPlaylistOrAlbum } from '../services/MusicPlayer';
 import { BotServices } from '../types';
 

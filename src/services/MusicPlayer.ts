@@ -14,6 +14,8 @@ import {
 import { GuildTextBasedChannel, User, MessageFlags } from 'discord.js';
 import { Innertube, YTNodes } from 'youtubei.js';
 
+import { requestLogger } from '../framework/logger';
+
 const execPromise = util.promisify(exec);
 
 export interface Song {
@@ -128,7 +130,7 @@ export async function resolveSpotifyTrack(url: string): Promise<string> {
 			}
 		}
 	} catch (e) {
-		console.warn('Spotify HTML resolve failed, trying oEmbed backup:', e);
+		requestLogger.warn('Spotify HTML resolve failed, trying oEmbed backup', { error: String(e) });
 	}
 
 	// Backup: oEmbed API
@@ -142,7 +144,7 @@ export async function resolveSpotifyTrack(url: string): Promise<string> {
 			}
 		}
 	} catch (e) {
-		console.error('Spotify oEmbed backup failed:', e);
+		requestLogger.error('Spotify oEmbed backup failed', {}, e as Error);
 	}
 
 	throw new Error(
@@ -213,7 +215,9 @@ export async function resolveSpotifyPlaylistOrAlbum(url: string): Promise<string
 				}
 			}
 		} catch (e) {
-			console.warn('Spotify embed resolve failed, falling back to page scraper:', e);
+			requestLogger.warn('Spotify embed resolve failed, falling back to page scraper', {
+				error: String(e),
+			});
 		}
 	}
 
@@ -255,7 +259,7 @@ export async function resolveSpotifyPlaylistOrAlbum(url: string): Promise<string
 			try {
 				return await resolveSpotifyTrack(trackUrl);
 			} catch (err) {
-				console.warn(`Failed to resolve track ${trackUrl}:`, err);
+				requestLogger.warn(`Failed to resolve track ${trackUrl}`, { error: String(err) });
 				return null;
 			}
 		}),
@@ -293,11 +297,11 @@ async function getStreamUrl(
 
 		if (songName) {
 			if (isAgeRestricted) {
-				console.warn(
+				requestLogger.warn(
 					`[Stream Fallback] Original URL is age-restricted. Attempting fallbacks for "${songName}"...`,
 				);
 			} else {
-				console.warn(
+				requestLogger.warn(
 					`[Stream Fallback] Failed to stream URL directly. Attempting fallbacks for "${songName}"...`,
 				);
 			}
@@ -306,37 +310,45 @@ async function getStreamUrl(
 			try {
 				const { stdout } = await execPromise(`yt-dlp -g -f bestaudio "scsearch:${songName}"`);
 				if (stdout.trim()) {
-					console.log(
+					requestLogger.info(
 						`[Stream Fallback] Successfully resolved SoundCloud stream for "${songName}"`,
 					);
 					return { url: stdout.trim(), source: 'SoundCloud' };
 				}
 			} catch (scErr) {
-				console.warn(`[Stream Fallback] SoundCloud fallback failed for "${songName}":`, scErr);
+				requestLogger.warn(`[Stream Fallback] SoundCloud fallback failed for "${songName}"`, {
+					error: String(scErr),
+				});
 			}
 
 			// 2. Try Bandcamp Search
 			try {
 				const { stdout } = await execPromise(`yt-dlp -g -f bestaudio "bcsearch:${songName}"`);
 				if (stdout.trim()) {
-					console.log(`[Stream Fallback] Successfully resolved Bandcamp stream for "${songName}"`);
+					requestLogger.info(
+						`[Stream Fallback] Successfully resolved Bandcamp stream for "${songName}"`,
+					);
 					return { url: stdout.trim(), source: 'Bandcamp' };
 				}
 			} catch (bcErr) {
-				console.warn(`[Stream Fallback] Bandcamp fallback failed for "${songName}":`, bcErr);
+				requestLogger.warn(`[Stream Fallback] Bandcamp fallback failed for "${songName}"`, {
+					error: String(bcErr),
+				});
 			}
 
 			// 3. Try YouTube Search (find another upload of the same song)
 			try {
 				const { stdout } = await execPromise(`yt-dlp -g -f bestaudio "ytsearch:${songName}"`);
 				if (stdout.trim()) {
-					console.log(
+					requestLogger.info(
 						`[Stream Fallback] Successfully resolved YouTube search fallback for "${songName}"`,
 					);
 					return { url: stdout.trim(), source: 'YouTube' };
 				}
 			} catch (ytErr) {
-				console.warn(`[Stream Fallback] YouTube search fallback failed for "${songName}":`, ytErr);
+				requestLogger.warn(`[Stream Fallback] YouTube search fallback failed for "${songName}"`, {
+					error: String(ytErr),
+				});
 			}
 		}
 
@@ -369,7 +381,9 @@ export async function searchSong(query: string): Promise<Omit<Song, 'user'> | nu
 			};
 		}
 	} catch (e) {
-		console.warn('YouTube Music search failed, falling back to standard search:', e);
+		requestLogger.warn('YouTube Music search failed, falling back to standard search', {
+			error: String(e),
+		});
 	}
 
 	try {
@@ -387,7 +401,7 @@ export async function searchSong(query: string): Promise<Omit<Song, 'user'> | nu
 			};
 		}
 	} catch (e) {
-		console.error('Standard search failed:', e);
+		requestLogger.error('Standard search failed', {}, e as Error);
 	}
 
 	return null;
@@ -416,24 +430,26 @@ export const queueTimerManager = {
 							],
 							flags: [MessageFlags.SuppressNotifications],
 						})
-						.catch((err: any) => console.error('❌ Failed to send idle leave message', err));
+						.catch((err: any) =>
+							requestLogger.error('❌ Failed to send idle leave message', {}, err as Error),
+						);
 				}
 				playerInstance.leave();
 				this.timers.delete(guildId);
 			} catch (err) {
-				console.error('❌ Failed to leave voice channel on idle timeout', err);
+				requestLogger.error('❌ Failed to leave voice channel on idle timeout', {}, err as Error);
 			}
 		}, durationMs);
 
 		this.timers.set(guildId, timer);
-		console.log(`⏱️ Started empty queue timer for guild ${guildId} (${durationMs}ms)`);
+		requestLogger.info(`⏱️ Started empty queue timer for guild ${guildId} (${durationMs}ms)`);
 	},
 	clear(guildId: string) {
 		const timer = this.timers.get(guildId);
 		if (timer) {
 			clearTimeout(timer);
 			this.timers.delete(guildId);
-			console.log(`⏱️ Cleared empty queue timer for guild ${guildId}`);
+			requestLogger.info(`⏱️ Cleared empty queue timer for guild ${guildId}`);
 		}
 	},
 };
@@ -456,6 +472,12 @@ export class GuildPlayer {
 	playbackStartTime = 0;
 	pausedDuration = 0;
 	pauseTime = 0;
+	/**
+	 * Guard flag: set to `true` while a new song is being prepared for playback.
+	 * Prevents `onSongFinished()` from triggering the idle timer during the
+	 * async gap between stream resolution and AudioPlayer.play().
+	 */
+	private _preparingPlay = false;
 
 	constructor(guildId: string) {
 		this.guildId = guildId;
@@ -500,7 +522,17 @@ export class GuildPlayer {
 		}
 	}
 
+	/** Bound handler so we can remove it to prevent listener leaks across re-joins. */
+	private _onDisconnected = () => {
+		void this.stop();
+	};
+
 	join(voiceChannel: any) {
+		// Remove the previous Disconnected listener (if any) to avoid duplicates.
+		if (this.voiceConnection) {
+			this.voiceConnection.off(VoiceConnectionStatus.Disconnected, this._onDisconnected);
+		}
+
 		this.voiceConnection = joinVoiceChannel({
 			channelId: voiceChannel.id,
 			guildId: this.guildId,
@@ -509,9 +541,7 @@ export class GuildPlayer {
 			selfMute: false,
 		});
 
-		this.voiceConnection.on(VoiceConnectionStatus.Disconnected, () => {
-			void this.stop();
-		});
+		this.voiceConnection.on(VoiceConnectionStatus.Disconnected, this._onDisconnected);
 
 		if (!this.audioPlayer) {
 			this.audioPlayer = createAudioPlayer();
@@ -519,7 +549,7 @@ export class GuildPlayer {
 				this.onSongFinished();
 			});
 			this.audioPlayer.on('error', (error) => {
-				console.error('Audio player error:', error);
+				requestLogger.error('Audio player error', {}, error as Error);
 				this.onSongFinished();
 			});
 			this.voiceConnection.subscribe(this.audioPlayer);
@@ -532,6 +562,7 @@ export class GuildPlayer {
 		}
 
 		this.cleanupProcess();
+		this._preparingPlay = true;
 
 		try {
 			const stream = await getStreamUrl(song.url, song.name);
@@ -552,6 +583,8 @@ export class GuildPlayer {
 					'0',
 					'-loglevel',
 					'0',
+					'-af',
+					'loudnorm=I=-16:TP=-1.5:LRA=11',
 					'-f',
 					's16le',
 					'-ar',
@@ -580,10 +613,21 @@ export class GuildPlayer {
 			this.isPlaying = true;
 
 			this.audioPlayer.play(resource);
+			this._preparingPlay = false;
 		} catch (err) {
-			console.error('Error starting playback:', err);
+			this._preparingPlay = false;
+			requestLogger.error('Error starting playback', {}, err as Error);
 			if (this.textChannel) {
-				this.textChannel.send(`⚠️ Error playing song: ${(err as Error).message}`).catch(() => {});
+				this.textChannel
+					.send({
+						embeds: [
+							{
+								description: `⚠️ Error playing song: ${(err as Error).message}`,
+								color: 0xff3333,
+							},
+						],
+					})
+					.catch(() => {});
 			}
 			this.onSongFinished();
 		}
@@ -620,11 +664,21 @@ export class GuildPlayer {
 					.catch(() => {});
 			}
 			void this.play(nextSong);
-		} else {
+		} else if (!this._preparingPlay) {
+			// Only start the idle timer if we are NOT in the middle of setting up a
+			// new song.  Without this guard, the AudioPlayer Idle event that fires
+			// when the previous resource's stream pipeline tears down during a
+			// skip-then-play would race with the new play() call and incorrectly
+			// start the empty-queue timer.
 			if (this.textChannel) {
 				this.textChannel
 					.send({
-						content: '🏁 The queue has finished playing all songs. Entering idle state...',
+						embeds: [
+							{
+								description: '🏁 The queue has finished playing all songs. Entering idle state...',
+								color: 0x5865f2,
+							},
+						],
 						flags: [MessageFlags.SuppressNotifications],
 					})
 					.catch(() => {});
@@ -723,10 +777,14 @@ export class GuildPlayer {
 		this.isPlaying = false;
 		this.queue = [];
 		this.history = [];
+		// Kill the ffmpeg process before the AudioPlayer tears down the resource.
+		// audioPlayer.stop(true) internally destroys the resource's playStream
+		// pipeline (including ffmpegStdout).  On Windows, destroying the pipe
+		// while the child process is still writing can leave stale handles.
+		this.cleanupProcess();
 		if (this.audioPlayer) {
 			this.audioPlayer.stop(true);
 		}
-		this.cleanupProcess();
 		this.isPaused = false;
 		this.currentResource = null;
 	}
@@ -1056,6 +1114,12 @@ export class MusicPlayerManager {
 					})
 					.catch(() => {});
 			}
+		}
+
+		// Final safety net: if onSongFinished() raced during the play/embed update
+		// and re-started the idle timer, clear it now. The player is actively playing.
+		if (player.isPlaying) {
+			queueTimerManager.clear(guildId);
 		}
 	}
 

@@ -1,5 +1,4 @@
 import { Pipeline, defineCommand, DataObject } from '../framework/index';
-import { performanceTimer } from '../middleware';
 import { BotServices } from '../types';
 
 const stopPipeline = new Pipeline<{}, Record<string, never>, BotServices>().run(async (ctx) => {

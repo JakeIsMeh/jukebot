@@ -1,5 +1,5 @@
 import { Pipeline, defineCommand, DataObject } from '../framework/index';
-import { inVoice, inSameVoice, performanceTimer } from '../middleware';
+import { inVoice, inSameVoice } from '../middleware';
 import { BotServices } from '../types';
 
 const resumePipeline = new Pipeline<{}, Record<string, never>, BotServices>()

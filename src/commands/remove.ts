@@ -1,5 +1,5 @@
 import { Pipeline, defineCommand, InferSchemaTypes, DataObject } from '../framework/index';
-import { inVoice, inSameVoice, performanceTimer } from '../middleware';
+import { inVoice, inSameVoice } from '../middleware';
 import { BotServices } from '../types';
 
 const options = {
@@ -16,7 +16,15 @@ const removePipeline = new Pipeline<{}, InferSchemaTypes<typeof options>, BotSer
 	.run(async (ctx) => {
 		const queue = ctx.services.player.getQueue(ctx.member!.guild.id);
 		if (!queue || queue.songs.length === 0) {
-			await ctx.reply('❌ There is no active music queue!', { ping: false });
+			await ctx.reply({
+				embeds: [
+					{
+						description: '❌ There is no active music queue!',
+						color: 0xff3333,
+					},
+				],
+				ping: false,
+			});
 			return;
 		}
 
@@ -25,7 +33,13 @@ const removePipeline = new Pipeline<{}, InferSchemaTypes<typeof options>, BotSer
 		const targetIndex = ctx.options.index;
 
 		if (targetIndex < 1 || targetIndex > allSongs.length) {
-			await ctx.reply(`❌ Invalid index! Must be between 1 and ${allSongs.length}.`, {
+			await ctx.reply({
+				embeds: [
+					{
+						description: `❌ Invalid index! Must be between 1 and ${allSongs.length}.`,
+						color: 0xff3333,
+					},
+				],
 				ping: false,
 			});
 			return;
@@ -34,7 +48,13 @@ const removePipeline = new Pipeline<{}, InferSchemaTypes<typeof options>, BotSer
 		const zeroIndex = targetIndex - 1;
 
 		if (zeroIndex === currentIndex) {
-			await ctx.reply('❌ Cannot remove the currently playing song! Use `skip` to skip it.', {
+			await ctx.reply({
+				embeds: [
+					{
+						description: '❌ Cannot remove the currently playing song! Use `skip` to skip it.',
+						color: 0xff3333,
+					},
+				],
 				ping: false,
 			});
 			return;
@@ -43,22 +63,44 @@ const removePipeline = new Pipeline<{}, InferSchemaTypes<typeof options>, BotSer
 		try {
 			if (zeroIndex < currentIndex) {
 				const [removedSong] = queue.history.splice(zeroIndex, 1);
-				await ctx.reply(`🗑️ Removed **${removedSong.name}** from the queue history.`);
+				await ctx.reply({
+					embeds: [
+						{
+							description: `🗑️ Removed **${removedSong.name}** from the queue history.`,
+							color: 0x5865f2,
+						},
+					],
+				});
 			} else {
 				// Calculate index in queue.songs
 				const songIndexInQueue = zeroIndex - currentIndex;
 				const [removedSong] = queue.songs.splice(songIndexInQueue, 1);
-				await ctx.reply(`🗑️ Removed **${removedSong.name}** from the queue.`);
+				await ctx.reply({
+					embeds: [
+						{
+							description: `🗑️ Removed **${removedSong.name}** from the queue.`,
+							color: 0x5865f2,
+						},
+					],
+				});
 			}
 		} catch (error) {
-			await ctx.reply(`❌ Failed to remove song: ${(error as Error).message}`, { ping: false });
+			await ctx.reply({
+				embeds: [
+					{
+						description: `❌ Failed to remove song: ${(error as Error).message}`,
+						color: 0xff3333,
+					},
+				],
+				ping: false,
+			});
 		}
 	});
 
 export const removeCommand = defineCommand<DataObject, BotServices, typeof options>({
 	name: 'remove',
 	description: 'Removes a specific song from the queue by its index',
-	aliases: ['rm', 'delete'],
+	aliases: ['rm', 'delete', 'del'],
 	options,
 	pipeline: removePipeline,
 });
