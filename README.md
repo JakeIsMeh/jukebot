@@ -13,4 +13,4 @@ discord bots.
 
 ## license
 
-ISC/MIT (i'll add the proper license file later)
+ISC
