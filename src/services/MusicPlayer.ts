@@ -720,13 +720,16 @@ export class GuildPlayer {
 	}
 
 	async jump(relativeIndex: number): Promise<Song> {
-		if (!this.audioPlayer || !this.isPlaying) {
-			throw new Error('Nothing is playing.');
-		}
-
-		if (relativeIndex === 0) {
+		if (relativeIndex === 0 && this.isPlaying) {
 			throw new Error('Cannot jump to the currently playing song.');
 		}
+
+		if (!this.audioPlayer || !this.voiceConnection) {
+			throw new Error('Not connected to a voice channel.');
+		}
+
+		// Clear idle timers since we are going to start playing
+		queueTimerManager.clear(this.guildId);
 
 		if (relativeIndex < 0) {
 			// Jump backward into history

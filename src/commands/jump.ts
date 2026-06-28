@@ -31,12 +31,12 @@ const absolutePipeline = new Pipeline<{}, InferSchemaTypes<typeof absoluteOption
 	.use(inSameVoice)
 	.run(async (ctx) => {
 		const queue = ctx.services.player.getQueue(ctx.member!.guild.id);
-		if (!queue || !queue.isPlaying) {
+		if (!queue || (queue.songs.length === 0 && queue.history.length === 0)) {
 			await ctx.reply(
 				{
 					embeds: [
 						{
-							description: '❌ There is nothing playing right now!',
+							description: '❌ The queue is currently empty!',
 							color: 0xff3333,
 						},
 					],
@@ -67,7 +67,7 @@ const absolutePipeline = new Pipeline<{}, InferSchemaTypes<typeof absoluteOption
 
 		const relativeOffset = targetIndex - (currentIndex + 1);
 
-		if (relativeOffset === 0) {
+		if (relativeOffset === 0 && queue.isPlaying) {
 			await ctx.reply(
 				{
 					embeds: [
@@ -118,12 +118,12 @@ const relativeSubcommand = defineSubcommand<DataObject, BotServices, typeof rela
 		.use(inSameVoice)
 		.run(async (ctx) => {
 			const queue = ctx.services.player.getQueue(ctx.member!.guild.id);
-			if (!queue || !queue.isPlaying) {
+			if (!queue || (queue.songs.length === 0 && queue.history.length === 0)) {
 				await ctx.reply(
 					{
 						embeds: [
 							{
-								description: '❌ There is nothing playing right now!',
+								description: '❌ The queue is currently empty!',
 								color: 0xff3333,
 							},
 						],
@@ -135,7 +135,7 @@ const relativeSubcommand = defineSubcommand<DataObject, BotServices, typeof rela
 
 			const offset = ctx.options.offset;
 
-			if (offset === 0) {
+			if (offset === 0 && queue.isPlaying) {
 				await ctx.reply(
 					{
 						embeds: [
